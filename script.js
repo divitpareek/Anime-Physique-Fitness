@@ -1,61 +1,85 @@
-// script.js
-let userLoggedIn = false;
-let isProUnlocked = false;
+const BASE_URL = "http://localhost:3000"; // Backend server URL
 
+// User login/signup
 function login() {
-  const username = document.getElementById("username").value;
-  if (username.trim() === "") {
+  const username = document.getElementById("username").value.trim();
+  if (!username) {
     alert("Please enter a username.");
     return;
   }
-  userLoggedIn = true;
-  alert(`Welcome, ${username}!`);
-  document.getElementById("auth").style.display = "none";
-  document.getElementById("age-group").style.display = "block";
-  document.getElementById("pro").style.display = "block";
+
+  fetch(`${BASE_URL}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert(`Welcome, ${username}!`);
+        document.getElementById("auth").style.display = "none";
+        document.getElementById("age-group").style.display = "block";
+        document.getElementById("pro").style.display = "block";
+      } else {
+        alert("Login failed. Try again.");
+      }
+    })
+    .catch((error) => console.error("Error:", error));
 }
 
+// Fetch workout/diet plan
 function generatePlan() {
   const ageGroup = document.getElementById("ageSelector").value;
-  const plan = document.getElementById("plan");
 
-  let workout, diet;
-
-  switch (ageGroup) {
-    case "teen":
-      workout = "15-minute cardio, 30 squats, 15 pushups, 10 pullups.";
-      diet = "High protein foods, fruits, and moderate carbs.";
-      break;
-    case "adult":
-      workout = "30-minute cardio, 40 squats, 20 pushups, 15 pullups.";
-      diet = "Balanced protein, healthy fats, and low carbs.";
-      break;
-    case "senior":
-      workout = "20-minute walk, 20 squats, light yoga.";
-      diet = "High fiber, moderate protein, and low sugar.";
-      break;
-    default:
-      workout = "No workout plan found.";
-      diet = "No diet plan found.";
-  }
-
-  document.getElementById("result").style.display = "block";
-  plan.innerHTML = `<p><strong>Workout:</strong> ${workout}</p>
-                    <p><strong>Diet:</strong> ${diet}</p>`;
+  fetch(`${BASE_URL}/plans?ageGroup=${ageGroup}`)
+    .then((response) => response.json())
+    .then((data) => {
+      document.getElementById("result").style.display = "block";
+      document.getElementById("plan").innerHTML = `
+        <p><strong>Workout:</strong> ${data.workout}</p>
+        <p><strong>Diet:</strong> ${data.diet}</p>`;
+      triggerVibration(); // Trigger vibration when a plan is generated
+    })
+    .catch((error) => console.error("Error:", error));
 }
 
+// Unlock Pro Features
 function unlockPro() {
-  if (isProUnlocked) {
-    alert("Pro Features are already unlocked!");
-    return;
-  }
-  const paymentSuccess = confirm(
-    "Click OK to confirm payment of ₹700 for unlocking Pro features."
-  );
+  fetch(`${BASE_URL}/unlock-pro`, { method: "POST" })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Pro Features Unlocked!");
+        document.getElementById("proFeatures").style.display = "block";
+        triggerVibration(); // Trigger vibration when Pro is unlocked
+      } else {
+        alert("Payment failed. Try again.");
+      }
+    })
+    .catch((error) => console.error("Error:", error));
+}
 
-  if (paymentSuccess) {
-    isProUnlocked = true;
-    alert("Pro Features Unlocked! Enjoy exclusive content.");
-    document.getElementById("proFeatures").style.display = "block";
+// Handle touch events for better interaction
+function handleTouchEvent(event) {
+  // Prevent default scrolling behavior on mobile devices
+  event.preventDefault();
+  
+  // You can add custom behavior here, for example:
+  document.body.style.backgroundColor = "#f0f0f0"; // Change background color on touch
+
+  triggerVibration(); // Trigger vibration on touch event
+}
+
+// Trigger vibration (haptic feedback)
+function triggerVibration() {
+  if (navigator.vibrate) {
+    navigator.vibrate(200); // Vibrate for 200ms
+  } else {
+    console.log("Vibration API not supported on this device.");
   }
 }
+
+// Add touch event listeners to interactive elements
+document.getElementById("loginForm").addEventListener("touchstart", handleTouchEvent);
+document.getElementById("ageSelector").addEventListener("touchstart", handleTouchEvent);
+document.getElementById("pro").addEventListener("touchstart", handleTouchEvent);
