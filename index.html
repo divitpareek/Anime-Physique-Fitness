@@ -1,58 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anime Physique Fitness App</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Physique App</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script> <!-- Razorpay Checkout Script -->
 </head>
 <body>
-  <header>
-    <h1>Anime Physique Fitness</h1>
-  </header>
+    <div id="auth">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Enter your username">
+        <button onclick="login()">Login</button>
+    </div>
 
-  <main>
-    <section id="auth">
-      <h2>User Login/Signup</h2>
-      <form id="loginForm">
-        <input type="text" id="username" placeholder="Enter Username" required>
-        <button type="button" onclick="login()">Login</button>
-      </form>
-    </section>
-
-    <section id="age-group" style="display: none;">
-      <h2>Select Your Age Group</h2>
-      <select id="ageSelector">
-        <option value="teen">Teen (13-19)</option>
-        <option value="adult">Adult (20-40)</option>
-        <option value="senior">Senior (40+)</option>
-      </select>
-      <button onclick="generatePlan()">Generate Plan</button>
-    </section>
-
-    <section id="result" style="display: none;">
-      <h2>Workout & Diet Plan</h2>
-      <div id="plan"></div>
-    </section>
+    <div id="age-group" style="display: none;">
+        <h2>Select Your Age Group</h2>
+        <select id="ageSelector">
+            <option value="teenager">Teenager</option>
+            <option value="adult">Adult</option>
+            <option value="senior">Senior</option>
+        </select>
+        <button onclick="generatePlan()">Generate Plan</button>
+        <div id="result" style="display: none;">
+            <h3>Your Plan:</h3>
+            <div id="plan"></div>
+        </div>
+    </div>
 
     <section id="pro" style="display: none;">
-      <h2>Pro Features</h2>
-      <p>Unlock Pro for ₹700 to access exclusive content!</p>
-      <button onclick="unlockPro()">Unlock Pro</button>
-      <div id="proFeatures" style="display: none;">
-        <h3>Pro Features</h3>
-        <ul>
-          <li>Customized Weekly Schedules</li>
-          <li>Exclusive Anime-inspired Workouts</li>
-        </ul>
-      </div>
+        <h2>Pro Features</h2>
+        <p>Unlock Pro for ₹250 to access exclusive content!</p>
+        <button onclick="initiatePayment()">Unlock Pro</button>
+        <div id="proFeatures" style="display: none;">
+            <h3>Pro Features</h3>
+            <ul>
+                <li>Customized Weekly Schedules</li>
+                <li>Exclusive Anime-inspired Workouts</li>
+            </ul>
+        </div>
     </section>
-  </main>
 
-  <footer>
-    <p>Anime Physique Fitness © 2024</p>
-  </footer>
-
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
