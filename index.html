@@ -3,44 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Physique App</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script> <!-- Razorpay Checkout Script -->
+    <title>Workout App</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="auth">
-        <h2>Login</h2>
-        <input type="text" id="username" placeholder="Enter your username">
-        <button onclick="login()">Login</button>
-    </div>
+    <div class="container">
+        <h1>Welcome to the Workout App</h1>
+        <p>Your personalized workout routine and diet plan for an anime-like physique.</p>
 
-    <div id="age-group" style="display: none;">
-        <h2>Select Your Age Group</h2>
-        <select id="ageSelector">
-            <option value="teenager">Teenager</option>
-            <option value="adult">Adult</option>
-            <option value="senior">Senior</option>
-        </select>
-        <button onclick="generatePlan()">Generate Plan</button>
-        <div id="result" style="display: none;">
-            <h3>Your Plan:</h3>
-            <div id="plan"></div>
+        <!-- Login Form -->
+        <div id="loginForm">
+            <h3>Login</h3>
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button onclick="login()">Login</button>
+        </div>
+
+        <!-- Purchase Button for Pro Version -->
+        <div id="proVersion">
+            <button onclick="purchasePro()">Unlock Pro Version for ₹250</button>
         </div>
     </div>
 
-    <section id="pro" style="display: none;">
-        <h2>Pro Features</h2>
-        <p>Unlock Pro for ₹250 to access exclusive content!</p>
-        <button onclick="initiatePayment()">Unlock Pro</button>
-        <div id="proFeatures" style="display: none;">
-            <h3>Pro Features</h3>
-            <ul>
-                <li>Customized Weekly Schedules</li>
-                <li>Exclusive Anime-inspired Workouts</li>
-            </ul>
-        </div>
-    </section>
-
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
