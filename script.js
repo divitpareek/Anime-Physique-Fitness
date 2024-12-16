@@ -38,48 +38,53 @@ function generatePlan() {
       document.getElementById("plan").innerHTML = `
         <p><strong>Workout:</strong> ${data.workout}</p>
         <p><strong>Diet:</strong> ${data.diet}</p>`;
-      triggerVibration(); // Trigger vibration when a plan is generated
     })
     .catch((error) => console.error("Error:", error));
 }
 
-// Unlock Pro Features
-function unlockPro() {
-  fetch(`${BASE_URL}/unlock-pro`, { method: "POST" })
+// Initiate Razorpay Payment
+function initiatePayment() {
+  const options = {
+    key: "YOUR_RAZORPAY_KEY", // Replace with your Razorpay key
+    amount: 250 * 100, // Amount in paise (₹250)
+    currency: "INR",
+    name: "Anime Physique App",
+    description: "Unlock Pro features for ₹250",
+    handler: function (response) {
+      // Payment was successful, handle success
+      alert("Payment successful!");
+      unlockPro(response.razorpay_payment_id); // Call backend to unlock Pro
+    },
+    prefill: {
+      name: document.getElementById("username").value, // Get username from input
+      email: "user@example.com", // Pre-fill the email (if any)
+      contact: "9999999999", // Pre-fill the contact number
+    },
+    theme: {
+      color: "#F37254", // Theme color
+    },
+  };
+
+  const razorpay = new Razorpay(options);
+  razorpay.open(); // Open the Razorpay payment popup
+}
+
+// Unlock Pro Features after successful payment
+function unlockPro(paymentId) {
+  const username = document.getElementById("username").value;
+
+  fetch(`${BASE_URL}/unlock-pro`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, paymentId }), // Send username and payment ID to backend
+  })
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
-        alert("Pro Features Unlocked!");
-        document.getElementById("proFeatures").style.display = "block";
-        triggerVibration(); // Trigger vibration when Pro is unlocked
+        document.getElementById("proFeatures").style.display = "block"; // Show Pro Features
       } else {
-        alert("Payment failed. Try again.");
+        alert("Payment verification failed. Try again.");
       }
     })
     .catch((error) => console.error("Error:", error));
 }
-
-// Handle touch events for better interaction
-function handleTouchEvent(event) {
-  // Prevent default scrolling behavior on mobile devices
-  event.preventDefault();
-  
-  // You can add custom behavior here, for example:
-  document.body.style.backgroundColor = "#f0f0f0"; // Change background color on touch
-
-  triggerVibration(); // Trigger vibration on touch event
-}
-
-// Trigger vibration (haptic feedback)
-function triggerVibration() {
-  if (navigator.vibrate) {
-    navigator.vibrate(200); // Vibrate for 200ms
-  } else {
-    console.log("Vibration API not supported on this device.");
-  }
-}
-
-// Add touch event listeners to interactive elements
-document.getElementById("loginForm").addEventListener("touchstart", handleTouchEvent);
-document.getElementById("ageSelector").addEventListener("touchstart", handleTouchEvent);
-document.getElementById("pro").addEventListener("touchstart", handleTouchEvent);
