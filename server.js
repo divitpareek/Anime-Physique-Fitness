@@ -1,76 +1,67 @@
 const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
 const bodyParser = require("body-parser");
-const cors = require("cors");
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
 
 const app = express();
-const PORT = 3000;
-
-// Middleware
 app.use(bodyParser.json());
-app.use(cors());
 
-// Initialize SQLite Database
-const db = new sqlite3.Database("database.sqlite", (err) => {
-  if (err) {
-    console.error("Failed to connect to database:", err.message);
+// Razorpay credentials
+const razorpayInstance = new Razorpay({
+  key_id: "YOUR_RAZORPAY_KEY", // Replace with your Razorpay key ID
+  key_secret: "YOUR_RAZORPAY_SECRET", // Replace with your Razorpay secret key
+});
+
+// Create a Razorpay order
+app.post("/create-order", (req, res) => {
+  const { amount } = req.body; // Amount in INR
+
+  const options = {
+    amount: amount * 100, // Amount in paise (100 paise = 1 INR)
+    currency: "INR",
+    receipt: "receipt#1",
+  };
+
+  razorpayInstance.orders.create(options, function (err, order) {
+    if (err) {
+      return res.status(500).json({ success: false, message: "Error creating order" });
+    }
+    res.json({ success: true, order_id: order.id });
+  });
+});
+
+// Verify payment signature
+app.post("/verify-payment", (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  const body = razorpay_order_id + "|" + razorpay_payment_id;
+  const expectedSignature = crypto
+    .createHmac("sha256", "YOUR_RAZORPAY_SECRET")
+    .update(body)
+    .digest("hex");
+
+  if (expectedSignature === razorpay_signature) {
+    // Payment is successful
+    res.json({ success: true });
   } else {
-    console.log("Connected to SQLite database.");
-    db.run(
-      "CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, isPro INTEGER DEFAULT 0)"
-    );
+    res.json({ success: false });
   }
 });
 
-// User Login
-app.post("/login", (req, res) => {
-  const { username } = req.body;
+// Endpoint to unlock Pro features after successful payment
+app.post("/unlock-pro", (req, res) => {
+  const { username, paymentId } = req.body;
 
-  db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
+  // Update the user's record in the database (set isPro = 1)
+  db.run("UPDATE users SET isPro = 1 WHERE username = ?", [username], (err) => {
     if (err) {
       res.status(500).json({ success: false, message: "Database error" });
       return;
     }
-
-    if (!row) {
-      db.run("INSERT INTO users (username, isPro) VALUES (?, 0)", [username]);
-    }
-
-    res.json({ success: true, message: "Login successful" });
+    res.json({ success: true, message: "Pro features unlocked!" });
   });
 });
 
-// Get Workout/Diet Plan
-const plans = {
-  teen: { workout: "15-min cardio, 30 squats, 15 pushups", diet: "High protein, moderate carbs." },
-  adult: { workout: "30-min cardio, 40 squats, 20 pushups", diet: "Balanced protein, healthy fats." },
-  senior: { workout: "20-min walk, light yoga", diet: "High fiber, low sugar." },
-};
-
-app.get("/plans", (req, res) => {
-  const { ageGroup } = req.query;
-  const plan = plans[ageGroup];
-
-  if (!plan) {
-    res.status(400).json({ success: false, message: "Invalid age group" });
-    return;
-  }
-
-  res.json(plan);
+app.listen(3000, () => {
+  console.log("Server is running on port 3000");
 });
-
-// Unlock Pro Features
-app.post("/unlock-pro", (req, res) => {
-  const { username } = req.body;
-
-  db.run("UPDATE users SET isPro = 1 WHERE username = ?", [username], (err) => {
-    if (err) {
-      res.status(500).json({ success: false, message: "Database error" });
-    } else {
-      res.json({ success: true, message: "Pro unlocked!" });
-    }
-  });
-});
-
-// Start the Server
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
